@@ -52,7 +52,14 @@ public final class SqlStorage implements AutoCloseable {
             Path file = settings.sqliteFile().toAbsolutePath();
             Files.createDirectories(file.getParent());
             hc.setDriverClassName("org.sqlite.JDBC");
-            hc.setJdbcUrl("jdbc:sqlite:" + file + "?journal_mode=WAL&busy_timeout=5000");
+            // IMPORTANT: no "?key=value" suffix here. Spigot/CraftBukkit 1.8 ships an OLD sqlite-jdbc
+            // that wins over any bundled copy and treats the suffix as part of the file name, which
+            // fails on Windows with "The filename, directory name, or volume label syntax is incorrect".
+            // Forward slashes work on every OS and every driver version.
+            hc.setJdbcUrl("jdbc:sqlite:" + file.toString().replace('\\', '/'));
+            // Per-connection settings are applied as plain statements instead (works on old drivers too).
+            hc.setConnectionInitSql("PRAGMA busy_timeout=5000");
+            hc.setConnectionTestQuery("SELECT 1");
             hc.setMaximumPoolSize(1);
             hc.setMinimumIdle(1);
         } else {
@@ -73,6 +80,13 @@ public final class SqlStorage implements AutoCloseable {
     /** Creates the schema if it does not exist yet. */
     public void init() throws SQLException {
         try (Connection c = dataSource.getConnection(); Statement st = c.createStatement()) {
+            if (dialect == Dialect.SQLITE) {
+                try {
+                    st.execute("PRAGMA journal_mode=WAL"); // persistent setting; best effort
+                } catch (SQLException ignored) {
+                    // falls back to the default journal mode
+                }
+            }
             for (String sql : schema()) {
                 st.execute(sql);
             }
@@ -121,24 +135,38 @@ public final class SqlStorage implements AutoCloseable {
         String sql = "INSERT INTO " + punishments + " (type, uuid, name, operator, reason, created_at, "
                 + "expires_at, server, active, removed_by, removed_at, updated_at) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection c = dataSource.getConnection();
-             PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, p.type().name());
-            ps.setString(2, p.uuid().toString());
-            ps.setString(3, truncate(p.name(), 32));
-            ps.setString(4, truncate(p.operator(), 64));
-            ps.setString(5, truncate(p.reason(), MAX_REASON));
-            ps.setLong(6, p.createdAt());
-            ps.setLong(7, p.expiresAt());
-            ps.setString(8, truncate(p.server(), 64));
-            ps.setInt(9, p.active() ? 1 : 0);
-            ps.setString(10, p.removedBy());
-            ps.setLong(11, p.removedAt());
-            ps.setLong(12, p.updatedAt());
-            ps.executeUpdate();
-            try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) {
-                    return keys.getLong(1);
+        try (Connection c = dataSource.getConnection()) {
+            try (PreparedStatement ps = dialect == Dialect.SQLITE
+                    ? c.prepareStatement(sql)
+                    : c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setString(1, p.type().name());
+                ps.setString(2, p.uuid().toString());
+                ps.setString(3, truncate(p.name(), 32));
+                ps.setString(4, truncate(p.operator(), 64));
+                ps.setString(5, truncate(p.reason(), MAX_REASON));
+                ps.setLong(6, p.createdAt());
+                ps.setLong(7, p.expiresAt());
+                ps.setString(8, truncate(p.server(), 64));
+                ps.setInt(9, p.active() ? 1 : 0);
+                ps.setString(10, p.removedBy());
+                ps.setLong(11, p.removedAt());
+                ps.setLong(12, p.updatedAt());
+                ps.executeUpdate();
+                if (dialect != Dialect.SQLITE) {
+                    try (ResultSet keys = ps.getGeneratedKeys()) {
+                        if (keys.next()) {
+                            return keys.getLong(1);
+                        }
+                    }
+                }
+            }
+            if (dialect == Dialect.SQLITE) {
+                // The pool holds a single connection for SQLite, so this is the row we just inserted.
+                try (Statement st = c.createStatement();
+                     ResultSet rs = st.executeQuery("SELECT last_insert_rowid()")) {
+                    if (rs.next()) {
+                        return rs.getLong(1);
+                    }
                 }
             }
             throw new SQLException("Insert succeeded but no generated key was returned");
@@ -208,21 +236,43 @@ public final class SqlStorage implements AutoCloseable {
     }
 
     public void upsertPlayer(UUID uuid, String name, String ip, long now) throws SQLException {
-        String sql;
+        String safeName = truncate(name, 32);
+        String safeIp = truncate(ip == null ? "" : ip, 64);
         if (dialect == Dialect.SQLITE) {
-            sql = "INSERT INTO " + players + " (uuid, name, name_lower, ip, last_seen) VALUES (?, ?, ?, ?, ?) "
-                    + "ON CONFLICT(uuid) DO UPDATE SET name = excluded.name, name_lower = excluded.name_lower, "
-                    + "ip = excluded.ip, last_seen = excluded.last_seen";
-        } else {
-            sql = "INSERT INTO " + players + " (uuid, name, name_lower, ip, last_seen) VALUES (?, ?, ?, ?, ?) "
-                    + "ON DUPLICATE KEY UPDATE name = VALUES(name), name_lower = VALUES(name_lower), "
-                    + "ip = VALUES(ip), last_seen = VALUES(last_seen)";
+            // Portable upsert that also works on the old SQLite versions bundled with Spigot 1.8.
+            try (Connection c = dataSource.getConnection()) {
+                int updated;
+                try (PreparedStatement ps = c.prepareStatement("UPDATE " + players
+                        + " SET name = ?, name_lower = ?, ip = ?, last_seen = ? WHERE uuid = ?")) {
+                    ps.setString(1, safeName);
+                    ps.setString(2, safeName.toLowerCase(Locale.ROOT));
+                    ps.setString(3, safeIp);
+                    ps.setLong(4, now);
+                    ps.setString(5, uuid.toString());
+                    updated = ps.executeUpdate();
+                }
+                if (updated == 0) {
+                    try (PreparedStatement ps = c.prepareStatement("INSERT OR REPLACE INTO " + players
+                            + " (uuid, name, name_lower, ip, last_seen) VALUES (?, ?, ?, ?, ?)")) {
+                        ps.setString(1, uuid.toString());
+                        ps.setString(2, safeName);
+                        ps.setString(3, safeName.toLowerCase(Locale.ROOT));
+                        ps.setString(4, safeIp);
+                        ps.setLong(5, now);
+                        ps.executeUpdate();
+                    }
+                }
+            }
+            return;
         }
+        String sql = "INSERT INTO " + players + " (uuid, name, name_lower, ip, last_seen) VALUES (?, ?, ?, ?, ?) "
+                + "ON DUPLICATE KEY UPDATE name = VALUES(name), name_lower = VALUES(name_lower), "
+                + "ip = VALUES(ip), last_seen = VALUES(last_seen)";
         try (Connection c = dataSource.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, uuid.toString());
-            ps.setString(2, truncate(name, 32));
-            ps.setString(3, truncate(name, 32).toLowerCase(Locale.ROOT));
-            ps.setString(4, truncate(ip == null ? "" : ip, 64));
+            ps.setString(2, safeName);
+            ps.setString(3, safeName.toLowerCase(Locale.ROOT));
+            ps.setString(4, safeIp);
             ps.setLong(5, now);
             ps.executeUpdate();
         }

@@ -58,6 +58,13 @@ permissions:
   apexban.exempt.kick:
     description: Cannot be kicked
     default: false
+  apexban.exempt.*:
+    description: Cannot be banned, muted or kicked
+    default: false
+    children:
+      apexban.exempt.ban: true
+      apexban.exempt.mute: true
+      apexban.exempt.kick: true
   apexban.*:
     description: All ApexBan staff permissions
     default: op
