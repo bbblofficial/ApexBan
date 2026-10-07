@@ -1,0 +1,90 @@
+# ============================================================================
+#  ApexBan - messages.yml
+#
+#  Formatting (can be mixed freely):
+#    * MiniMessage tags: <red> <gold> <#ff8800> <bold> <italic> <underlined>
+#      <strikethrough> <obfuscated> <reset> <newline> and closing tags (</red>)
+#    * Legacy codes:     &c &6 &l &r and hex &#ff8800
+#  Hex colours are approximated on servers older than 1.16.
+#
+#  Always wrap values in quotes.
+#  Placeholders: %prefix% %player% %operator% %reason% %duration% %expires%
+#                %remaining% %id% %server% %date% %input% %max%
+# ============================================================================
+
+prefix: "<dark_gray>[<#ff5555>Apex<#ffaa00>Ban<dark_gray>] <gray>"
+
+# --------------------------------------------------------------------- general
+no-permission: "%prefix%<red>You do not have permission to do that."
+error: "%prefix%<red>An internal error occurred. Check the console for details."
+player-not-found: "%prefix%<red>Player <white>%player%<red> was not found. They must have joined at least once."
+player-not-online: "%prefix%<red>Player <white>%player%<red> is not online."
+invalid-name: "%prefix%<red><white>%input%<red> is not a valid player name."
+invalid-duration: "%prefix%<red><white>%input%<red> is not a valid duration. Use e.g. <white>30m<red>, <white>2h<red>, <white>7d<red>, <white>1w<red>, <white>1mo<red>, <white>1d12h<red>."
+duration-too-long: "%prefix%<red>That duration is too long. The maximum is <white>%max%<red>."
+exempt: "%prefix%<red>You cannot punish <white>%player%<red>."
+already-banned: "%prefix%<red><white>%player%<red> is already banned."
+already-muted: "%prefix%<red><white>%player%<red> is already muted."
+not-banned: "%prefix%<red><white>%player%<red> is not banned."
+not-muted: "%prefix%<red><white>%player%<red> is not muted."
+
+time:
+  permanent: "Permanent"
+  never: "Never"
+
+# ----------------------------------------------------------------------- usage
+usage:
+  ban: "%prefix%<yellow>Usage: <white>/ban [-s] <player> [duration] [reason...]<newline><gray>No duration = permanent. Example: <white>/ban Steve 7d Griefing"
+  mute: "%prefix%<yellow>Usage: <white>/mute [-s] <player> [duration] [reason...]<newline><gray>No duration = permanent. Example: <white>/mute Steve 2h Spamming"
+  kick: "%prefix%<yellow>Usage: <white>/kick [-s] <player> [reason...]"
+  unban: "%prefix%<yellow>Usage: <white>/unban [-s] <player>"
+  unmute: "%prefix%<yellow>Usage: <white>/unmute [-s] <player>"
+
+# ------------------------------------------------------- feedback to the staff
+# Only sent when the broadcast below does not already reach the staff member.
+success:
+  ban: "%prefix%<green>Banned <white>%player%<green> (<white>%duration%<green>) for <white>%reason%<green>. <dark_gray>#%id%"
+  mute: "%prefix%<green>Muted <white>%player%<green> (<white>%duration%<green>) for <white>%reason%<green>. <dark_gray>#%id%"
+  kick: "%prefix%<green>Kicked <white>%player%<green> for <white>%reason%<green>."
+  unban: "%prefix%<green>Unbanned <white>%player%<green>."
+  unmute: "%prefix%<green>Unmuted <white>%player%<green>."
+
+# ------------------------------------------------------------------ broadcasts
+broadcast:
+  silent-prefix: "<dark_gray>[<gray>Silent<dark_gray>] "
+  ban:
+    permanent: "%prefix%<white>%player%<gray> was <red>permanently banned<gray> by <white>%operator%<gray>. Reason: <yellow>%reason%"
+    temporary: "%prefix%<white>%player%<gray> was <red>banned<gray> for <white>%duration%<gray> by <white>%operator%<gray>. Reason: <yellow>%reason%"
+  mute:
+    permanent: "%prefix%<white>%player%<gray> was <gold>permanently muted<gray> by <white>%operator%<gray>. Reason: <yellow>%reason%"
+    temporary: "%prefix%<white>%player%<gray> was <gold>muted<gray> for <white>%duration%<gray> by <white>%operator%<gray>. Reason: <yellow>%reason%"
+  kick: "%prefix%<white>%player%<gray> was <red>kicked<gray> by <white>%operator%<gray>. Reason: <yellow>%reason%"
+  unban: "%prefix%<white>%player%<gray> was <green>unbanned<gray> by <white>%operator%<gray>."
+  unmute: "%prefix%<white>%player%<gray> was <green>unmuted<gray> by <white>%operator%<gray>."
+
+# ---------------------------------------------------------- mute notifications
+mute:
+  # Sent to the player at the moment they get muted.
+  notify:
+    permanent: "%prefix%<red>You have been <bold>permanently</bold> muted by <white>%operator%<red>.<newline><gray>Reason: <yellow>%reason%"
+    temporary: "%prefix%<red>You have been muted for <white>%duration%<red> by <white>%operator%<red>.<newline><gray>Reason: <yellow>%reason%<newline><gray>Expires: <white>%expires%"
+  # Sent when a muted player tries to talk.
+  blocked:
+    permanent: "%prefix%<red>You are <bold>permanently</bold> muted.<newline><gray>Reason: <yellow>%reason%"
+    temporary: "%prefix%<red>You are muted for another <white>%remaining%<red>.<newline><gray>Reason: <yellow>%reason%"
+  # Sent when a muted player tries a blocked command.
+  blocked-command: "%prefix%<red>You cannot use that command while muted."
+
+unmute:
+  notify: "%prefix%<green>You have been unmuted by <white>%operator%<green>."
+
+# ----------------------------------------------------------------------- login
+login:
+  database-error: "<red>The moderation database is currently unavailable.<newline><gray>Please try again in a moment."
+
+# ----------------------------------------------------------------- /apexban
+admin:
+  reload-success: "%prefix%<green>Configuration reloaded. <gray>(Database settings require a restart.)"
+  reload-failed: "%prefix%<red>Reload failed. Check the console for details."
+  version: "%prefix%<gray>ApexBan <white>v%version%<gray> on <white>%platform%<gray> | server-id <white>%server%"
+  help: "%prefix%<yellow>/apexban reload <gray>- reload configuration<newline>%prefix%<yellow>/apexban version <gray>- show version info"

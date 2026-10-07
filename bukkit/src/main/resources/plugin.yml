@@ -1,0 +1,72 @@
+name: ApexBan
+version: '${version}'
+main: dev.apexban.bukkit.ApexBanBukkit
+api-version: '1.13'
+author: ApexBan
+description: Enterprise moderation core - bans, mutes and kicks with a shared global database.
+commands:
+  ban:
+    description: Ban a player (permanent unless a duration is given)
+    usage: /<command> [-s] <player> [duration] [reason...]
+  mute:
+    description: Mute a player (permanent unless a duration is given)
+    usage: /<command> [-s] <player> [duration] [reason...]
+  kick:
+    description: Kick a player
+    usage: /<command> [-s] <player> [reason...]
+  unban:
+    description: Remove a ban
+    usage: /<command> [-s] <player>
+    aliases: [pardon]
+  unmute:
+    description: Remove a mute
+    usage: /<command> [-s] <player>
+  apexban:
+    description: ApexBan administration
+    usage: /<command> <reload|version>
+permissions:
+  apexban.ban:
+    description: Use /ban
+    default: op
+  apexban.mute:
+    description: Use /mute
+    default: op
+  apexban.kick:
+    description: Use /kick
+    default: op
+  apexban.unban:
+    description: Use /unban
+    default: op
+  apexban.unmute:
+    description: Use /unmute
+    default: op
+  apexban.silent:
+    description: Use the -s (silent) flag
+    default: op
+  apexban.notify:
+    description: See silent punishments and staff-only announcements
+    default: op
+  apexban.admin:
+    description: Use /apexban
+    default: op
+  apexban.exempt.ban:
+    description: Cannot be banned
+    default: false
+  apexban.exempt.mute:
+    description: Cannot be muted
+    default: false
+  apexban.exempt.kick:
+    description: Cannot be kicked
+    default: false
+  apexban.*:
+    description: All ApexBan staff permissions
+    default: op
+    children:
+      apexban.ban: true
+      apexban.mute: true
+      apexban.kick: true
+      apexban.unban: true
+      apexban.unmute: true
+      apexban.silent: true
+      apexban.notify: true
+      apexban.admin: true

@@ -1,0 +1,74 @@
+name: Build ApexBan
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Compile, test and package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Build
+        run: gradle build --no-daemon --stacktrace
+
+      - name: Upload Bukkit/Spigot/Paper jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApexBan-Bukkit
+          path: bukkit/build/libs/ApexBan-Bukkit-*.jar
+          if-no-files-found: error
+
+      - name: Upload BungeeCord jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApexBan-Bungee
+          path: bungee/build/libs/ApexBan-Bungee-*.jar
+          if-no-files-found: error
+
+      - name: Upload Velocity jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApexBan-Velocity
+          path: velocity/build/libs/ApexBan-Velocity-*.jar
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.jar
+          generate_release_notes: true

@@ -1,0 +1,9 @@
+{
+  "id": "apexban",
+  "name": "ApexBan",
+  "version": "${version}",
+  "description": "Enterprise moderation core - bans, mutes and kicks with a shared global database.",
+  "authors": ["ApexBan"],
+  "dependencies": [],
+  "main": "dev.apexban.velocity.ApexBanVelocity"
+}

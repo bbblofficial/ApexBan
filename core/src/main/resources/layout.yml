@@ -1,0 +1,52 @@
+# ============================================================================
+#  ApexBan - layout.yml
+#  Disconnect-screen templates shown to banned or kicked players.
+#
+#  Every entry is a list of lines; lines are joined with a line break.
+#  Use "" for an empty spacer line. Always wrap lines in quotes.
+#  Supports MiniMessage tags and legacy &-codes (see messages.yml header).
+#
+#  Placeholders:
+#    %player%     banned player's name         %operator%  staff member
+#    %reason%     reason given                 %id%        punishment id
+#    %duration%   original length / Permanent  %expires%   expiry date / Never
+#    %remaining%  time left (temporary bans)   %server%    server that issued it
+#    %date%       when it was issued
+# ============================================================================
+
+ban:
+  # Shown for bans without an expiry.
+  permanent:
+    - "<dark_red><bold>YOU ARE PERMANENTLY BANNED"
+    - ""
+    - "<gray>Player: <white>%player%"
+    - "<gray>Reason: <yellow>%reason%"
+    - "<gray>Banned by: <white>%operator%"
+    - "<gray>Issued: <white>%date%"
+    - ""
+    - "<gray>Ban ID: <white>#%id%"
+    - "<dark_gray>Appeal at <aqua>https://example.com/appeal<dark_gray> and quote your ban ID."
+
+  # Shown for bans with an expiry (TempBan).
+  temporary:
+    - "<red><bold>YOU ARE TEMPORARILY BANNED"
+    - ""
+    - "<gray>Player: <white>%player%"
+    - "<gray>Reason: <yellow>%reason%"
+    - "<gray>Banned by: <white>%operator%"
+    - ""
+    - "<gray>Duration: <white>%duration%"
+    - "<gray>Time left: <gold>%remaining%"
+    - "<gray>Expires: <white>%expires%"
+    - ""
+    - "<gray>Ban ID: <white>#%id%"
+    - "<dark_gray>Appeal at <aqua>https://example.com/appeal"
+
+# Shown when a player is kicked.
+kick:
+  - "<red><bold>You have been kicked"
+  - ""
+  - "<gray>Reason: <yellow>%reason%"
+  - "<gray>Kicked by: <white>%operator%"
+  - ""
+  - "<dark_gray>You may reconnect immediately."
