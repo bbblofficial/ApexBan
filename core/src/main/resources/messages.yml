@@ -1,78 +1,82 @@
 # ============================================================================
 #  MineStormBan - messages.yml
+#  Created by Muvixo
 #  Default theme: Aqua (&b) and White (&f)
 #  Uses legacy & color codes only (no MiniMessage <> tags)
 # ============================================================================
 
-prefix: "&8[&bMine&fStorm&bBan&8] &7"
-
-# --------------------------------------------------------------------- general
-no-permission: "%prefix%&cYou do not have permission to do that."
-error: "%prefix%&cAn internal error occurred. Check the console for details."
-player-not-found: "%prefix%&cPlayer &f%player%&c was not found. They must have joined at least once."
-player-not-online: "%prefix%&cPlayer &f%player%&c is not online."
-invalid-name: "%prefix%&f%input%&c is not a valid player name."
-invalid-duration: "%prefix%&f%input%&c is not a valid duration. Use e.g. &f30m&c, &f2h&c, &f7d&c, &f1w&c, &f1mo&c, &f1d12h&c."
-duration-too-long: "%prefix%&cThat duration is too long. The maximum is &f%max%&c."
-exempt: "%prefix%&cYou cannot punish &f%player%&c."
-already-banned: "%prefix%&f%player%&c is already banned."
-already-muted: "%prefix%&f%player%&c is already muted."
-not-banned: "%prefix%&f%player%&c is not banned."
-not-muted: "%prefix%&f%player%&c is not muted."
-
+prefix: '&8[&bMine&fStorm&bBan&8] &7'
+no-permission: '%prefix%&cYou do not have permission to do that.'
+error: '%prefix%&cAn internal error occurred. Check the console for details.'
+player-not-found: '%prefix%&cPlayer &f%player%&c was not found. They must have joined at least once.'
+player-not-online: '%prefix%&cPlayer &f%player%&c is not online.'
+invalid-name: '%prefix%&f%input%&c is not a valid player name.'
+invalid-duration: '%prefix%&f%input%&c is not a valid duration. Use e.g. &f30m&c, &f2h&c, &f7d&c, &f1w&c, &f1mo&c, &f1d12h&c.'
+duration-too-long: '%prefix%&cThat duration is too long. The maximum is &f%max%&c.'
+exempt: '%prefix%&cYou cannot punish &f%player%&c.'
+already-banned: '%prefix%&f%player%&c is already banned.'
+already-muted: '%prefix%&f%player%&c is already muted.'
+not-banned: '%prefix%&f%player%&c is not banned.'
+not-muted: '%prefix%&f%player%&c is not muted.'
 time:
-  permanent: "Permanent"
-  never: "Never"
-
-# ----------------------------------------------------------------------- usage
+  permanent: Permanent
+  never: Never
 usage:
-  ban: "%prefix%&bUsage: &f/ban [-s] <player> [duration] [reason...]\n&7No duration = permanent. Example: &f/ban Steve 7d Griefing"
-  mute: "%prefix%&bUsage: &f/mute [-s] <player> [duration] [reason...]\n&7No duration = permanent. Example: &f/mute Steve 2h Spamming"
-  kick: "%prefix%&bUsage: &f/kick [-s] <player> [reason...]"
-  unban: "%prefix%&bUsage: &f/unban [-s] <player>"
-  unmute: "%prefix%&bUsage: &f/unmute [-s] <player>"
+  ban: '%prefix%&bUsage: &f/ban [-s] <player> [duration] [reason...]
 
-# ------------------------------------------------------- feedback to the staff
+    &7No duration = permanent. Example: &f/ban Steve 7d Griefing'
+  mute: '%prefix%&bUsage: &f/mute [-s] <player> [duration] [reason...]
+
+    &7No duration = permanent. Example: &f/mute Steve 2h Spamming'
+  kick: '%prefix%&bUsage: &f/kick [-s] <player> [reason...]'
+  unban: '%prefix%&bUsage: &f/unban [-s] <player>'
+  unmute: '%prefix%&bUsage: &f/unmute [-s] <player>'
 success:
-  ban: "%prefix%&bBanned &f%player%&b (&f%duration%&b) for &f%reason%&b. &8#%id%"
-  mute: "%prefix%&bMuted &f%player%&b (&f%duration%&b) for &f%reason%&b. &8#%id%"
-  kick: "%prefix%&bKicked &f%player%&b for &f%reason%&b."
-  unban: "%prefix%&bUnbanned &f%player%&b."
-  unmute: "%prefix%&bUnmuted &f%player%&b."
-
-# ------------------------------------------------------------------ broadcasts
+  ban: '%prefix%&bBanned &f%player%&b (&f%duration%&b) for &f%reason%&b. &8#%id%'
+  mute: '%prefix%&bMuted &f%player%&b (&f%duration%&b) for &f%reason%&b. &8#%id%'
+  kick: '%prefix%&bKicked &f%player%&b for &f%reason%&b.'
+  unban: '%prefix%&bUnbanned &f%player%&b.'
+  unmute: '%prefix%&bUnmuted &f%player%&b.'
 broadcast:
-  silent-prefix: "&8[&7Silent&8] "
+  silent-prefix: '&8[&7Silent&8] '
   ban:
-    permanent: "%prefix%&f%player%&7 was &bpermanently banned&7 by &f%operator%&7. Reason: &b%reason%"
-    temporary: "%prefix%&f%player%&7 was &bbanned&7 for &f%duration%&7 by &f%operator%&7. Reason: &b%reason%"
+    permanent: '%prefix%&f%player%&7 was &bpermanently banned&7 by &f%operator%&7. Reason: &b%reason%'
+    temporary: '%prefix%&f%player%&7 was &bbanned&7 for &f%duration%&7 by &f%operator%&7. Reason: &b%reason%'
   mute:
-    permanent: "%prefix%&f%player%&7 was &bpermanently muted&7 by &f%operator%&7. Reason: &b%reason%"
-    temporary: "%prefix%&f%player%&7 was &bmuted&7 for &f%duration%&7 by &f%operator%&7. Reason: &b%reason%"
-  kick: "%prefix%&f%player%&7 was &bkicked&7 by &f%operator%&7. Reason: &b%reason%"
-  unban: "%prefix%&f%player%&7 was &bunbanned&7 by &f%operator%&7."
-  unmute: "%prefix%&f%player%&7 was &bunmuted&7 by &f%operator%&7."
-
-# ---------------------------------------------------------- mute notifications
+    permanent: '%prefix%&f%player%&7 was &bpermanently muted&7 by &f%operator%&7. Reason: &b%reason%'
+    temporary: '%prefix%&f%player%&7 was &bmuted&7 for &f%duration%&7 by &f%operator%&7. Reason: &b%reason%'
+  kick: '%prefix%&f%player%&7 was &bkicked&7 by &f%operator%&7. Reason: &b%reason%'
+  unban: '%prefix%&f%player%&7 was &bunbanned&7 by &f%operator%&7.'
+  unmute: '%prefix%&f%player%&7 was &bunmuted&7 by &f%operator%&7.'
 mute:
   notify:
-    permanent: "%prefix%&bYou have been permanently muted by &f%operator%&b.\n&7Reason: &f%reason%"
-    temporary: "%prefix%&bYou have been muted for &f%duration%&b by &f%operator%&b.\n&7Reason: &f%reason%\n&7Expires: &f%expires%"
+    permanent: '%prefix%&bYou have been permanently muted by &f%operator%&b.
+
+      &7Reason: &f%reason%'
+    temporary: '%prefix%&bYou have been muted for &f%duration%&b by &f%operator%&b.
+
+      &7Reason: &f%reason%
+
+      &7Expires: &f%expires%'
   blocked:
-    permanent: "%prefix%&bYou are permanently muted.\n&7Reason: &f%reason%"
-    temporary: "%prefix%&bYou are muted for another &f%remaining%&b.\n&7Reason: &f%reason%"
-  blocked-command: "%prefix%&bYou cannot use that command while muted."
+    permanent: '%prefix%&bYou are permanently muted.
 
+      &7Reason: &f%reason%'
+    temporary: '%prefix%&bYou are muted for another &f%remaining%&b.
+
+      &7Reason: &f%reason%'
+  blocked-command: '%prefix%&bYou cannot use that command while muted.'
 unmute:
-  notify: "%prefix%&bYou have been unmuted by &f%operator%&b."
-
-# ----------------------------------------------------------------------- login
+  notify: '%prefix%&bYou have been unmuted by &f%operator%&b.'
 login:
-  database-error: "&bThe moderation database is currently unavailable.\n&7Please try again in a moment."
+  database-error: '&bThe moderation database is currently unavailable.
 
-# ----------------------------------------------------------------- /msban
+    &7Please try again in a moment.'
 admin:
-  reload-success: "%prefix%&bConfiguration reloaded. &7(Database settings require a restart.)"
-  reload-failed: "%prefix%&cReload failed. Check the console for details."
-  version: "%prefix%&7MineStormBan &fv%version%&7 on &f%platform%&7 | server-id &f%server%"
-  help: "%prefix%&b/msban reload &7- reload configuration\n%prefix%&b/msban version &7- show version info"
+  reload-success: '%prefix%&bConfiguration reloaded. &7(Database settings require a restart.)'
+  reload-failed: '%prefix%&cReload failed. Check the console for details.'
+  version: '%prefix%&7MineStormBan &fv%version%&7 on &f%platform%&7 | server-id &f%server%'
+  help: '%prefix%&b/msban reload &7- reload configuration
+
+    %prefix%&b/msban version &7- show version info'
+  creator: '%prefix%&7Created by &bMuvixo&7. Plugin: &fMineStormBan&7.'

@@ -222,8 +222,7 @@ public final class CommandHandler {
                     "version", core.platform().pluginVersion(),
                     "platform", core.platform().platformName(),
                     "server", core.serverId())));
-            case "creator", "author", "credit" -> sender.sendMessage(core.text("admin.creator"));
-                default -> sender.sendMessage(core.text("admin.help"));
+            default -> sender.sendMessage(core.text("admin.help"));
         }
     }
 
@@ -260,7 +259,7 @@ public final class CommandHandler {
         String current = args[args.length - 1].toLowerCase(Locale.ROOT);
 
         if (cmd.equals("minestormban")) {
-            return args.length == 1 ? filter(List.of("reload", "version", "creator"), current) : List.of();
+            return args.length == 1 ? filter(List.of("reload", "version"), current) : List.of();
         }
 
         int offset = args[0].equalsIgnoreCase(SILENT_FLAG) ? 1 : 0;

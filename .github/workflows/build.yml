@@ -1,4 +1,4 @@
-name: Build ApexBan
+name: Build MineStormBan
 
 on:
   push:
@@ -35,22 +35,22 @@ jobs:
       - name: Upload Bukkit/Spigot/Paper jar
         uses: actions/upload-artifact@v4
         with:
-          name: ApexBan-Bukkit
-          path: bukkit/build/libs/ApexBan-Bukkit-*.jar
+          name: MineStormBan-Bukkit
+          path: bukkit/build/libs/MineStormBan-Bukkit-*.jar
           if-no-files-found: error
 
       - name: Upload BungeeCord jar
         uses: actions/upload-artifact@v4
         with:
-          name: ApexBan-Bungee
-          path: bungee/build/libs/ApexBan-Bungee-*.jar
+          name: MineStormBan-Bungee
+          path: bungee/build/libs/MineStormBan-Bungee-*.jar
           if-no-files-found: error
 
       - name: Upload Velocity jar
         uses: actions/upload-artifact@v4
         with:
-          name: ApexBan-Velocity
-          path: velocity/build/libs/ApexBan-Velocity-*.jar
+          name: MineStormBan-Velocity
+          path: velocity/build/libs/MineStormBan-Velocity-*.jar
           if-no-files-found: error
 
   release:

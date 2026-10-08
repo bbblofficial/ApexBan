@@ -3,7 +3,7 @@
   "name": "MineStormBan",
   "version": "${version}",
   "description": "Enterprise moderation core - bans, mutes and kicks with a shared global database.",
-  "authors": ["Muvixo"],
+  "authors": ["MineStormBan"],
   "dependencies": [],
   "main": "dev.minestormban.velocity.MineStormBanVelocity"
 }

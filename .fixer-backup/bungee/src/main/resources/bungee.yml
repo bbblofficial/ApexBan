@@ -1,5 +1,5 @@
 name: MineStormBan
 version: '${version}'
 main: dev.minestormban.bungee.MineStormBanBungee
-author: Muvixo
+author: MineStormBan
 description: Enterprise moderation core - bans, mutes and kicks with a shared global database.
