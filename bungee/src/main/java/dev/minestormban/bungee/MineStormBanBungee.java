@@ -15,7 +15,7 @@ public final class MineStormBanBungee extends Plugin {
         try {
             core.enable();
         } catch (Exception ex) {
-            getLogger().log(Level.SEVERE, "ApexBan failed to start; commands and checks are disabled", ex);
+            getLogger().log(Level.SEVERE, "MineStormBan failed to start; commands and checks are disabled", ex);
             core = null;
             return;
         }
@@ -25,7 +25,7 @@ public final class MineStormBanBungee extends Plugin {
         getProxy().getPluginManager().registerCommand(this, new BungeeCommand(core, "kick"));
         getProxy().getPluginManager().registerCommand(this, new BungeeCommand(core, "unban", "pardon"));
         getProxy().getPluginManager().registerCommand(this, new BungeeCommand(core, "unmute"));
-        getProxy().getPluginManager().registerCommand(this, new BungeeCommand(core, "minestormban"));
+        getProxy().getPluginManager().registerCommand(this, new BungeeCommand(core, "minestormban", "msban"));
     }
 
     @Override

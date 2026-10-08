@@ -11,11 +11,14 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Loads config.yml, messages.yml and layout.yml from the plugin folder. Files are copied out of
- * the jar on first run; any key missing from a user's file falls back to the bundled default.
+ * the jar on first run. Any key missing from a user's file is added to that file automatically
+ * (see {@link YamlMerger}) and also falls back to the bundled default.
  */
 public final class ConfigManager {
 
@@ -68,7 +71,59 @@ public final class ConfigManager {
             logger.error("Could not parse " + name + "; falling back to bundled defaults", ex);
             user = null;
         }
+        if (user != null && defaults != null) {
+            user = completeMissing(name, target, user, defaults);
+        }
         return new YamlFile(user, defaults);
+    }
+
+    /**
+     * Auto-missing for config files: every key that exists in the bundled file but not in the
+     * server's copy is written into the server's file. Existing values are never changed and the
+     * previous file is saved as {@code <name>.bak}.
+     */
+    private Map<String, Object> completeMissing(String name, Path target, Map<String, Object> user,
+                                                Map<String, Object> defaults) {
+        List<String> missing = YamlMerger.missingPaths(user, defaults);
+        if (missing.isEmpty()) {
+            return user;
+        }
+        Map<String, Object> merged = YamlMerger.merge(user, defaults);
+        try {
+            String userText = Files.readString(target, StandardCharsets.UTF_8);
+            String defaultText = readResourceText(name);
+
+            String newText = null;
+            boolean onlyTopLevel = missing.stream().noneMatch(path -> path.contains("."));
+            if (onlyTopLevel) {
+                // Keeps comments and formatting: the bundled text of the missing sections is appended.
+                newText = YamlMerger.appendTopLevelBlocks(userText, defaultText, missing).orElse(null);
+            }
+            if (newText == null) {
+                newText = YamlMerger.dump(merged, userText);
+            }
+
+            // Never write something we cannot read back.
+            try (Reader check = new java.io.StringReader(newText)) {
+                if (parse(check) == null) {
+                    throw new IllegalStateException("result is empty");
+                }
+            }
+            Files.copy(target, folder.resolve(name + ".bak"), StandardCopyOption.REPLACE_EXISTING);
+            Files.writeString(target, newText, StandardCharsets.UTF_8);
+            logger.info("[auto-missing] " + name + ": added " + missing.size() + " missing key(s): "
+                    + String.join(", ", missing) + " (backup: " + name + ".bak)");
+        } catch (IOException | RuntimeException ex) {
+            logger.warn("[auto-missing] could not update " + name + " on disk (" + ex.getMessage()
+                    + "); the missing keys are used from memory for now");
+        }
+        return merged;
+    }
+
+    private String readResourceText(String name) throws IOException {
+        try (InputStream in = open(name)) {
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 
     private Map<String, Object> parseResource(String name) throws IOException {

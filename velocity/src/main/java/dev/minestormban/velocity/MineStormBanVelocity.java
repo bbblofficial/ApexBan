@@ -15,10 +15,10 @@ import java.nio.file.Path;
 
 @Plugin(
         id = "minestormban",
-        name = "ApexBan",
+        name = "MineStormBan",
         version = "1.0.0",
         description = "Enterprise moderation core - bans, mutes and kicks with a shared global database.",
-        authors = {"ApexBan"}
+        authors = {"Muvixo"}
 )
 public final class MineStormBanVelocity {
 
@@ -44,7 +44,7 @@ public final class MineStormBanVelocity {
         try {
             created.enable();
         } catch (Exception ex) {
-            logger.error("ApexBan failed to start; commands and checks are disabled", ex);
+            logger.error("MineStormBan failed to start; commands and checks are disabled", ex);
             return;
         }
         core = created;
@@ -57,7 +57,7 @@ public final class MineStormBanVelocity {
         register(commands, "kick");
         register(commands, "unban", "pardon");
         register(commands, "unmute");
-        register(commands, "minestormban");
+        register(commands, "minestormban", "msban");
     }
 
     @Subscribe

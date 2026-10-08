@@ -5,6 +5,7 @@ import dev.minestormban.core.model.LoginCheck;
 import dev.minestormban.core.model.Outcome;
 import dev.minestormban.core.model.Outcome.Status;
 import dev.minestormban.core.model.Punishment;
+import dev.minestormban.core.model.PunishmentScope;
 import dev.minestormban.core.model.PunishmentType;
 import dev.minestormban.core.model.Target;
 import dev.minestormban.core.platform.MineStormPlayer;
@@ -69,7 +70,7 @@ public final class PunishmentManager {
     private void poll() {
         try {
             long started = System.currentTimeMillis();
-            List<Punishment> changes = storage.changedSince(lastSync.get() - SYNC_SKEW_MS);
+            List<Punishment> changes = storage.changedSince(lastSync.get() - SYNC_SKEW_MS, core.serverId());
             lastSync.set(started);
             for (Punishment p : changes) {
                 applyRemoteChange(p, started);
@@ -106,11 +107,11 @@ public final class PunishmentManager {
         long now = System.currentTimeMillis();
         try {
             storage.upsertPlayer(uuid, name, ip, now);
-            Optional<Punishment> ban = storage.findActive(uuid, PunishmentType.BAN, now);
+            Optional<Punishment> ban = storage.findActive(uuid, PunishmentType.BAN, now, core.serverId());
             if (ban.isPresent()) {
                 return LoginCheck.banned(ban.get());
             }
-            Optional<Punishment> mute = storage.findActive(uuid, PunishmentType.MUTE, now);
+            Optional<Punishment> mute = storage.findActive(uuid, PunishmentType.MUTE, now, core.serverId());
             if (mute.isPresent()) {
                 muteCache.put(uuid, mute.get());
             } else {
@@ -142,9 +143,12 @@ public final class PunishmentManager {
 
     // ------------------------------------------------------------------ actions
 
-    /** @param durationMs milliseconds, or {@code -1} for a permanent ban */
+    /**
+     * @param durationMs milliseconds, or {@code -1} for a permanent ban
+     * @param scope      {@code SERVER}: only enforced on this server; {@code GLOBAL}: on every server
+     */
     public CompletableFuture<Outcome> ban(String targetName, String operator, long durationMs, String reason,
-                                          boolean silent) {
+                                          boolean silent, PunishmentScope scope) {
         return supply(() -> {
             Optional<Target> resolved = resolve(targetName);
             if (resolved.isEmpty()) {
@@ -156,12 +160,13 @@ public final class PunishmentManager {
                 return Outcome.of(Status.EXEMPT);
             }
             long now = System.currentTimeMillis();
-            Optional<Punishment> existing = storage.findActive(target.uuid(), PunishmentType.BAN, now);
+            Optional<Punishment> existing = findExisting(target.uuid(), PunishmentType.BAN, now, scope);
             if (existing.isPresent()) {
                 return Outcome.of(Status.ALREADY_ACTIVE, existing.get());
             }
             Punishment draft = new Punishment(0L, PunishmentType.BAN, target.uuid(), target.name(), operator,
-                    reason, now, durationMs > 0 ? now + durationMs : -1L, core.serverId(), true, null, 0L, now);
+                    reason, now, durationMs > 0 ? now + durationMs : -1L, core.serverId(), scope, true, null,
+                    0L, now);
             Punishment saved = draft.withId(storage.insert(draft));
 
             if (online.isPresent()) {
@@ -173,9 +178,12 @@ public final class PunishmentManager {
         });
     }
 
-    /** @param durationMs milliseconds, or {@code -1} for a permanent mute */
+    /**
+     * @param durationMs milliseconds, or {@code -1} for a permanent mute
+     * @param scope      {@code SERVER}: only enforced on this server; {@code GLOBAL}: on every server
+     */
     public CompletableFuture<Outcome> mute(String targetName, String operator, long durationMs, String reason,
-                                           boolean silent) {
+                                           boolean silent, PunishmentScope scope) {
         return supply(() -> {
             Optional<Target> resolved = resolve(targetName);
             if (resolved.isEmpty()) {
@@ -187,12 +195,13 @@ public final class PunishmentManager {
                 return Outcome.of(Status.EXEMPT);
             }
             long now = System.currentTimeMillis();
-            Optional<Punishment> existing = storage.findActive(target.uuid(), PunishmentType.MUTE, now);
+            Optional<Punishment> existing = findExisting(target.uuid(), PunishmentType.MUTE, now, scope);
             if (existing.isPresent()) {
                 return Outcome.of(Status.ALREADY_ACTIVE, existing.get());
             }
             Punishment draft = new Punishment(0L, PunishmentType.MUTE, target.uuid(), target.name(), operator,
-                    reason, now, durationMs > 0 ? now + durationMs : -1L, core.serverId(), true, null, 0L, now);
+                    reason, now, durationMs > 0 ? now + durationMs : -1L, core.serverId(), scope, true, null,
+                    0L, now);
             Punishment saved = draft.withId(storage.insert(draft));
 
             if (online.isPresent()) {
@@ -219,7 +228,7 @@ public final class PunishmentManager {
             }
             long now = System.currentTimeMillis();
             Punishment draft = new Punishment(0L, PunishmentType.KICK, player.uuid(), player.name(), operator,
-                    reason, now, -1L, core.serverId(), false, null, 0L, now);
+                    reason, now, -1L, core.serverId(), PunishmentScope.SERVER, false, null, 0L, now);
             Punishment saved = draft.withId(storage.insert(draft));
 
             platform.kick(player.uuid(), core.kickScreen(saved));
@@ -228,14 +237,15 @@ public final class PunishmentManager {
         });
     }
 
-    public CompletableFuture<Outcome> unban(String targetName, String operator, boolean silent) {
+    /** @param everywhere {@code true} removes the ban on every server, {@code false} only where it applies here */
+    public CompletableFuture<Outcome> unban(String targetName, String operator, boolean silent, boolean everywhere) {
         return supply(() -> {
             Optional<Target> resolved = resolve(targetName);
             if (resolved.isEmpty()) {
                 return Outcome.of(Status.NOT_FOUND);
             }
             Optional<Punishment> removed = storage.deactivate(resolved.get().uuid(), PunishmentType.BAN,
-                    operator, System.currentTimeMillis());
+                    operator, System.currentTimeMillis(), everywhere ? null : core.serverId());
             if (removed.isEmpty()) {
                 return Outcome.of(Status.NOT_ACTIVE);
             }
@@ -246,7 +256,8 @@ public final class PunishmentManager {
         });
     }
 
-    public CompletableFuture<Outcome> unmute(String targetName, String operator, boolean silent) {
+    /** @param everywhere {@code true} removes the mute on every server, {@code false} only where it applies here */
+    public CompletableFuture<Outcome> unmute(String targetName, String operator, boolean silent, boolean everywhere) {
         return supply(() -> {
             Optional<Target> resolved = resolve(targetName);
             if (resolved.isEmpty()) {
@@ -254,7 +265,7 @@ public final class PunishmentManager {
             }
             UUID uuid = resolved.get().uuid();
             Optional<Punishment> removed = storage.deactivate(uuid, PunishmentType.MUTE, operator,
-                    System.currentTimeMillis());
+                    System.currentTimeMillis(), everywhere ? null : core.serverId());
             if (removed.isEmpty()) {
                 return Outcome.of(Status.NOT_ACTIVE);
             }
@@ -268,6 +279,17 @@ public final class PunishmentManager {
     }
 
     // ------------------------------------------------------------------ internals
+
+    /**
+     * A new SERVER punishment is refused when one already applies on this server (local or global).
+     * A new GLOBAL punishment is only refused when a global one already exists.
+     */
+    private Optional<Punishment> findExisting(UUID uuid, PunishmentType type, long now, PunishmentScope scope)
+            throws SQLException {
+        return scope == PunishmentScope.GLOBAL
+                ? storage.findActiveGlobal(uuid, type, now)
+                : storage.findActive(uuid, type, now, core.serverId());
+    }
 
     private Optional<Target> resolve(String name) throws SQLException {
         Optional<MineStormPlayer> online = platform.findOnline(name);

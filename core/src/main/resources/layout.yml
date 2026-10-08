@@ -1,37 +1,41 @@
 # ============================================================================
 #  MineStormBan - layout.yml
 #  Created by Muvixo
-#  Default theme: Aqua (&b) and White (&f)
+#  Disconnect screens. Default theme: Aqua (&b) and White (&f)
+#  Placeholders: %player% %reason% %operator% %date% %duration% %remaining%
+#                %expires% %id% %server% %scope%
 # ============================================================================
 
 ban:
   permanent:
-  - '&b&lYOU ARE PERMANENTLY BANNED'
-  - ''
-  - '&7Player: &f%player%'
-  - '&7Reason: &b%reason%'
-  - '&7Banned by: &f%operator%'
-  - '&7Issued: &f%date%'
-  - ''
-  - '&7Ban ID: &f#%id%'
-  - '&8Appeal at &bhttps://example.com/appeal&8 and quote your ban ID.'
+    - '&b&lYOU ARE PERMANENTLY BANNED'
+    - ''
+    - '&7Player: &f%player%'
+    - '&7Reason: &b%reason%'
+    - '&7Banned by: &f%operator%'
+    - '&7Issued: &f%date%'
+    - '&7Applies to: &f%scope%'
+    - ''
+    - '&7Ban ID: &f#%id%'
+    - '&8Appeal at &bhttps://example.com/appeal&8 and quote your ban ID.'
   temporary:
-  - '&b&lYOU ARE TEMPORARILY BANNED'
-  - ''
-  - '&7Player: &f%player%'
-  - '&7Reason: &b%reason%'
-  - '&7Banned by: &f%operator%'
-  - ''
-  - '&7Duration: &f%duration%'
-  - '&7Time left: &b%remaining%'
-  - '&7Expires: &f%expires%'
-  - ''
-  - '&7Ban ID: &f#%id%'
-  - '&8Appeal at &bhttps://example.com/appeal'
+    - '&b&lYOU ARE TEMPORARILY BANNED'
+    - ''
+    - '&7Player: &f%player%'
+    - '&7Reason: &b%reason%'
+    - '&7Banned by: &f%operator%'
+    - '&7Applies to: &f%scope%'
+    - ''
+    - '&7Duration: &f%duration%'
+    - '&7Time left: &b%remaining%'
+    - '&7Expires: &f%expires%'
+    - ''
+    - '&7Ban ID: &f#%id%'
+    - '&8Appeal at &bhttps://example.com/appeal'
 kick:
-- '&b&lYou have been kicked'
-- ''
-- '&7Reason: &b%reason%'
-- '&7Kicked by: &f%operator%'
-- ''
-- '&8You may reconnect immediately.'
+  - '&b&lYou have been kicked'
+  - ''
+  - '&7Reason: &b%reason%'
+  - '&7Kicked by: &f%operator%'
+  - ''
+  - '&8You may reconnect immediately.'

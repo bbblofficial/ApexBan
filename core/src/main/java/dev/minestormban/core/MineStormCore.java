@@ -5,6 +5,7 @@ import dev.minestormban.core.config.ConfigManager;
 import dev.minestormban.core.config.YamlFile;
 import dev.minestormban.core.manager.PunishmentManager;
 import dev.minestormban.core.model.Punishment;
+import dev.minestormban.core.model.PunishmentScope;
 import dev.minestormban.core.model.PunishmentType;
 import dev.minestormban.core.platform.MineStormSender;
 import dev.minestormban.core.platform.PlatformAdapter;
@@ -52,6 +53,8 @@ public final class MineStormCore {
     private volatile long maxDurationMillis = DurationParser.HARD_MAX_MILLIS;
     private volatile String serverId = "default";
     private volatile boolean failOpen = true;
+    private volatile PunishmentScope banScope = PunishmentScope.SERVER;
+    private volatile PunishmentScope muteScope = PunishmentScope.SERVER;
 
     public MineStormCore(PlatformAdapter platform) {
         this.platform = platform;
@@ -64,7 +67,7 @@ public final class MineStormCore {
         configs.load();
         applySettings();
 
-        storage = new SqlStorage(readStorageSettings());
+        storage = new SqlStorage(readStorageSettings(), platform.logger());
         try {
             storage.init();
         } catch (Exception ex) {
@@ -74,7 +77,7 @@ public final class MineStormCore {
 
         AtomicInteger counter = new AtomicInteger();
         ScheduledThreadPoolExecutor pool = new ScheduledThreadPoolExecutor(4, runnable -> {
-            Thread t = new Thread(runnable, "ApexBan-Worker-" + counter.incrementAndGet());
+            Thread t = new Thread(runnable, "MineStormBan-Worker-" + counter.incrementAndGet());
             t.setDaemon(true);
             return t;
         });
@@ -84,8 +87,9 @@ public final class MineStormCore {
         manager = new PunishmentManager(this, storage, executor);
         manager.startSync(configs.config().getInt("sync.poll-interval-seconds", 5));
         commands = new CommandHandler(this);
-        platform.logger().info("ApexBan " + platform.pluginVersion() + " enabled on " + platform.platformName()
-                + " (server-id=" + serverId + ", storage=" + readStorageSettings().type() + ")");
+        platform.logger().info("MineStormBan " + platform.pluginVersion() + " enabled on " + platform.platformName()
+                + " (server-id=" + serverId + ", storage=" + readStorageSettings().type()
+                + ", ban-scope=" + banScope + ", mute-scope=" + muteScope + ")");
     }
 
     public void disable() {
@@ -117,8 +121,11 @@ public final class MineStormCore {
 
     private void applySettings() {
         YamlFile c = configs.config();
-        serverId = c.getString("server-id", "default");
+        String id = c.getString("server-id", "default").trim();
+        serverId = id.isEmpty() ? "default" : (id.length() > 64 ? id.substring(0, 64) : id);
         failOpen = c.getBoolean("database.fail-open", true);
+        banScope = PunishmentScope.parse(c.getString("scope.ban", "server"), PunishmentScope.SERVER);
+        muteScope = PunishmentScope.parse(c.getString("scope.mute", "server"), PunishmentScope.SERVER);
 
         String zone = c.getString("timezone", "UTC");
         String pattern = c.getString("date-format", "yyyy-MM-dd HH:mm:ss");
@@ -159,7 +166,7 @@ public final class MineStormCore {
         Path sqlite = platform.dataFolder().resolve(c.getString("database.sqlite.file", "minestormban.db"));
         return new StorageSettings(
                 dialect,
-                c.getString("database.table-prefix", "apexban_"),
+                c.getString("database.table-prefix", "msban_"),
                 sqlite,
                 c.getString("database.mysql.host", "127.0.0.1"),
                 c.getInt("database.mysql.port", 3306),
@@ -168,7 +175,8 @@ public final class MineStormCore {
                 c.getString("database.mysql.password", ""),
                 c.getBoolean("database.mysql.use-ssl", false),
                 c.getInt("database.mysql.pool-size", 8),
-                c.getInt("database.mysql.connection-timeout-ms", 10_000));
+                c.getInt("database.mysql.connection-timeout-ms", 10_000),
+                c.getBoolean("database.auto-repair", true));
     }
 
     // ------------------------------------------------------------------ accessors
@@ -195,6 +203,11 @@ public final class MineStormCore {
 
     public boolean failOpen() {
         return failOpen;
+    }
+
+    /** Scope used for /ban and /mute when no -g / -l flag is given. */
+    public PunishmentScope defaultScope(PunishmentType type) {
+        return type == PunishmentType.MUTE ? muteScope : banScope;
     }
 
     public long maxDurationMillis() {
@@ -242,6 +255,8 @@ public final class MineStormCore {
         m.put("id", String.valueOf(p.id()));
         m.put("server", p.server());
         m.put("type", p.type().name().toLowerCase(Locale.ROOT));
+        m.put("scope", messages.getString("scope-names." + p.scope().name().toLowerCase(Locale.ROOT),
+                p.scope().name().toLowerCase(Locale.ROOT)));
         m.put("date", formatDate(p.createdAt()));
         m.put("duration", p.permanent() ? permanent : DurationFormatter.format(p.totalDuration()));
         m.put("expires", p.permanent() ? never : formatDate(p.expiresAt()));

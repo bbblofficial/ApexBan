@@ -27,7 +27,7 @@ public final class MineStormBanBukkit extends JavaPlugin {
         try {
             core.enable();
         } catch (Exception ex) {
-            getLogger().log(Level.SEVERE, "ApexBan failed to start; disabling plugin", ex);
+            getLogger().log(Level.SEVERE, "MineStormBan failed to start; disabling plugin", ex);
             core = null;
             Bukkit.getPluginManager().disablePlugin(this);
             return;
@@ -53,7 +53,7 @@ public final class MineStormBanBukkit extends JavaPlugin {
      * Spigot/CraftBukkit 1.8 has its own /ban, /kick, /pardon ... that are guarded by
      * {@code bukkit.command.*} permissions. If one of them keeps the label, staff who were given
      * {@code minestormban.*} in LuckPerms still get "You don't have permission". Replace only built-in
-     * (non-plugin) commands so ApexBan's permission nodes are the ones that count. Commands that
+     * (non-plugin) commands so MineStormBan's permission nodes are the ones that count. Commands that
      * belong to another plugin are never touched.
      */
     @SuppressWarnings("unchecked")
@@ -83,7 +83,7 @@ public final class MineStormBanBukkit extends JavaPlugin {
             }
         } catch (Exception | LinkageError ex) {
             getLogger().log(Level.WARNING, "Could not override built-in commands; if /ban still asks for "
-                    + "bukkit.command.* permissions use /apexban:ban instead.", ex);
+                    + "bukkit.command.* permissions use /minestormban:ban instead.", ex);
         }
     }
 

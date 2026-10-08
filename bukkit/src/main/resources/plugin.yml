@@ -7,26 +7,24 @@ description: Enterprise moderation core - bans, mutes and kicks with a shared gl
 commands:
   ban:
     description: Ban a player (permanent unless a duration is given)
-    usage: /<command> [-s] <player> [duration] [reason...]
+    usage: /<command> [-s] [-g|-l] <player> [duration] [reason...]
   mute:
     description: Mute a player (permanent unless a duration is given)
-    usage: /<command> [-s] <player> [duration] [reason...]
+    usage: /<command> [-s] [-g|-l] <player> [duration] [reason...]
   kick:
     description: Kick a player
     usage: /<command> [-s] <player> [reason...]
   unban:
     description: Remove a ban
-    usage: /<command> [-s] <player>
+    usage: /<command> [-s] [-g] <player>
     aliases: [pardon]
   unmute:
     description: Remove a mute
-    usage: /<command> [-s] <player>
-  msban:
-    description: MineStormBan administration (creator is public)
-    usage: /<command> <reload|version|creator>
+    usage: /<command> [-s] [-g] <player>
   minestormban:
     description: MineStormBan administration (creator is public)
     usage: /<command> <reload|version|creator>
+    aliases: [msban]
 permissions:
   minestormban.ban:
     description: Use /ban
@@ -45,6 +43,9 @@ permissions:
     default: op
   minestormban.silent:
     description: Use the -s (silent) flag
+    default: op
+  minestormban.global:
+    description: Use the -g flag (global ban/mute, or remove a punishment on all servers)
     default: op
   minestormban.notify:
     description: See silent punishments and staff-only announcements
@@ -78,5 +79,8 @@ permissions:
       minestormban.unban: true
       minestormban.unmute: true
       minestormban.silent: true
-      minestormban.notify: true
+      minestormban.global:
+    description: Use the -g flag (global ban/mute, or remove a punishment on all servers)
+    default: op
+  minestormban.notify: true
       minestormban.admin: true

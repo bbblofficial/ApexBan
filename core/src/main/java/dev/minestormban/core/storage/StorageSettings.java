@@ -13,5 +13,6 @@ public record StorageSettings(
         String password,
         boolean useSsl,
         int poolSize,
-        long connectionTimeoutMs) {
+        long connectionTimeoutMs,
+        boolean autoRepair) {
 }

@@ -22,10 +22,10 @@ commands:
     description: Remove a mute
     usage: /<command> [-s] <player>
   msban:
-    description: MineStormBan administration
+    description: MineStormBan administration (creator is public)
     usage: /<command> <reload|version|creator>
   minestormban:
-    description: MineStormBan administration
+    description: MineStormBan administration (creator is public)
     usage: /<command> <reload|version|creator>
 permissions:
   minestormban.ban:
@@ -50,7 +50,7 @@ permissions:
     description: See silent punishments and staff-only announcements
     default: op
   minestormban.admin:
-    description: Use /msban and /minestormban
+    description: Use /msban and /minestormban (creator is public and does not need this)
     default: op
   minestormban.exempt.ban:
     description: Cannot be banned

@@ -2,6 +2,7 @@ package dev.minestormban.core.command;
 
 import dev.minestormban.core.MineStormCore;
 import dev.minestormban.core.model.Outcome;
+import dev.minestormban.core.model.PunishmentScope;
 import dev.minestormban.core.model.PunishmentType;
 import dev.minestormban.core.platform.MineStormSender;
 import dev.minestormban.core.util.DurationFormatter;
@@ -18,19 +19,22 @@ import java.util.OptionalLong;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Platform-independent command logic for /ban, /mute, /kick, /unban, /unmute and /apexban.
+ * Platform-independent command logic for /ban, /mute, /kick, /unban, /unmute and /minestormban (/msban).
  *
  * <pre>
- *   /ban  [-s] &lt;player&gt; [duration|perm] [reason...]
- *   /mute [-s] &lt;player&gt; [duration|perm] [reason...]
- *   /kick [-s] &lt;player&gt; [reason...]
+ *   /ban    [-s] [-g|-l] &lt;player&gt; [duration|perm] [reason...]
+ *   /mute   [-s] [-g|-l] &lt;player&gt; [duration|perm] [reason...]
+ *   /kick   [-s] &lt;player&gt; [reason...]
+ *   /unban  [-s] [-g] &lt;player&gt;
+ *   /unmute [-s] [-g] &lt;player&gt;
  * </pre>
  *
- * When the duration is omitted the punishment is permanent.
+ * When the duration is omitted the punishment is permanent. Without a scope flag a ban/mute only
+ * applies on the server it was issued on (see {@code scope.*} in config.yml); {@code -g} makes it
+ * global (all servers sharing the database), {@code -l} forces it to stay local.
  */
 public final class CommandHandler {
 
-    private static final String SILENT_FLAG = "-s";
     private static final int MAX_REASON_LENGTH = 512;
     private static final List<String> DURATION_SUGGESTIONS = List.of("perm", "30m", "1h", "12h", "1d", "7d", "30d");
 
@@ -48,7 +52,7 @@ public final class CommandHandler {
                 case "kick" -> kick(sender, args);
                 case "unban" -> remove(sender, args, PunishmentType.BAN);
                 case "unmute" -> remove(sender, args, PunishmentType.MUTE);
-                case "minestormban" -> admin(sender, args);
+                case "minestormban", "msban" -> admin(sender, args);
                 default -> sender.sendMessage(core.text("error"));
             }
         } catch (RuntimeException ex) {
@@ -65,16 +69,11 @@ public final class CommandHandler {
             sender.sendMessage(core.text("no-permission"));
             return;
         }
-        int index = 0;
-        boolean silent = false;
-        if (args.length > 0 && args[0].equalsIgnoreCase(SILENT_FLAG)) {
-            if (!sender.hasPermission("minestormban.silent")) {
-                sender.sendMessage(core.text("no-permission"));
-                return;
-            }
-            silent = true;
-            index = 1;
+        Flags flags = parseFlags(sender, args, true, true);
+        if (flags == null) {
+            return;
         }
+        int index = flags.next();
         if (args.length - index < 1) {
             sender.sendMessage(core.text("usage." + key));
             return;
@@ -119,10 +118,13 @@ public final class CommandHandler {
             reason = reason.substring(0, MAX_REASON_LENGTH);
         }
 
-        final boolean silentFlag = silent;
+        PunishmentScope scope = flags.global() ? PunishmentScope.GLOBAL
+                : flags.local() ? PunishmentScope.SERVER
+                : core.defaultScope(type);
+        final boolean silentFlag = flags.silent();
         CompletableFuture<Outcome> future = type == PunishmentType.BAN
-                ? core.manager().ban(targetName, sender.name(), duration, reason, silentFlag)
-                : core.manager().mute(targetName, sender.name(), duration, reason, silentFlag);
+                ? core.manager().ban(targetName, sender.name(), duration, reason, silentFlag, scope)
+                : core.manager().mute(targetName, sender.name(), duration, reason, silentFlag, scope);
         future.thenAccept(outcome -> report(sender, key, targetName, outcome, silentFlag));
     }
 
@@ -133,16 +135,11 @@ public final class CommandHandler {
             sender.sendMessage(core.text("no-permission"));
             return;
         }
-        int index = 0;
-        boolean silent = false;
-        if (args.length > 0 && args[0].equalsIgnoreCase(SILENT_FLAG)) {
-            if (!sender.hasPermission("minestormban.silent")) {
-                sender.sendMessage(core.text("no-permission"));
-                return;
-            }
-            silent = true;
-            index = 1;
+        Flags flags = parseFlags(sender, args, false, false);
+        if (flags == null) {
+            return;
         }
+        int index = flags.next();
         if (args.length - index < 1) {
             sender.sendMessage(core.text("usage.kick"));
             return;
@@ -161,7 +158,7 @@ public final class CommandHandler {
         if (reason.length() > MAX_REASON_LENGTH) {
             reason = reason.substring(0, MAX_REASON_LENGTH);
         }
-        final boolean silentFlag = silent;
+        final boolean silentFlag = flags.silent();
         core.manager().kick(targetName, sender.name(), reason, silentFlag)
                 .thenAccept(outcome -> report(sender, "kick", targetName, outcome, silentFlag));
     }
@@ -174,16 +171,11 @@ public final class CommandHandler {
             sender.sendMessage(core.text("no-permission"));
             return;
         }
-        int index = 0;
-        boolean silent = false;
-        if (args.length > 0 && args[0].equalsIgnoreCase(SILENT_FLAG)) {
-            if (!sender.hasPermission("minestormban.silent")) {
-                sender.sendMessage(core.text("no-permission"));
-                return;
-            }
-            silent = true;
-            index = 1;
+        Flags flags = parseFlags(sender, args, true, false);
+        if (flags == null) {
+            return;
         }
+        int index = flags.next();
         if (args.length - index < 1) {
             sender.sendMessage(core.text("usage." + key));
             return;
@@ -193,20 +185,71 @@ public final class CommandHandler {
             sender.sendMessage(core.text("invalid-name", Placeholders.of("input", targetName)));
             return;
         }
-        final boolean silentFlag = silent;
+        final boolean silentFlag = flags.silent();
+        final boolean everywhere = flags.global();
         CompletableFuture<Outcome> future = type == PunishmentType.BAN
-                ? core.manager().unban(targetName, sender.name(), silentFlag)
-                : core.manager().unmute(targetName, sender.name(), silentFlag);
+                ? core.manager().unban(targetName, sender.name(), silentFlag, everywhere)
+                : core.manager().unmute(targetName, sender.name(), silentFlag, everywhere);
         future.thenAccept(outcome -> report(sender, key, targetName, outcome, silentFlag));
     }
 
-    // ------------------------------------------------------------------ /apexban
+    // ------------------------------------------------------------------ flags
+
+    /** Leading option flags: {@code -s} silent, {@code -g} global/everywhere, {@code -l} local. */
+    private record Flags(boolean silent, boolean global, boolean local, int next) {
+    }
+
+    private static boolean isFlag(String token, boolean allowGlobal, boolean allowLocal) {
+        if (token == null || token.length() != 2 || token.charAt(0) != '-') {
+            return false;
+        }
+        char c = Character.toLowerCase(token.charAt(1));
+        return c == 's' || (c == 'g' && allowGlobal) || (c == 'l' && allowLocal);
+    }
+
+    /**
+     * Consumes leading flags. Returns {@code null} (after telling the sender why) when a flag is
+     * used without the matching permission.
+     */
+    private Flags parseFlags(MineStormSender sender, String[] args, boolean allowGlobal, boolean allowLocal) {
+        boolean silent = false;
+        boolean global = false;
+        boolean local = false;
+        int index = 0;
+        while (index < args.length && isFlag(args[index], allowGlobal, allowLocal)) {
+            char c = Character.toLowerCase(args[index].charAt(1));
+            if (c == 's') {
+                if (!sender.hasPermission("minestormban.silent")) {
+                    sender.sendMessage(core.text("no-permission"));
+                    return null;
+                }
+                silent = true;
+            } else if (c == 'g') {
+                if (!sender.hasPermission("minestormban.global")) {
+                    sender.sendMessage(core.text("no-permission"));
+                    return null;
+                }
+                global = true;
+            } else {
+                local = true;
+            }
+            index++;
+        }
+        if (global && local) {
+            // Contradictory: the explicit "everywhere" wins.
+            local = false;
+        }
+        return new Flags(silent, global, local, index);
+    }
+
+    // ------------------------------------------------------------------ /minestormban (/msban)
 
     private void admin(MineStormSender sender, String[] args) {
         String sub = args.length > 0 ? args[0].toLowerCase(Locale.ROOT) : "help";
 
         // /msban creator (and /minestormban creator) is PUBLIC: any player can
-        // run it to see who made the plugin. No permission required.
+        // run it to see who made the plugin. No permission required, so it is
+        // handled BEFORE the permission check below.
         if (sub.equals("creator") || sub.equals("author") || sub.equals("credit")) {
             sender.sendMessage(core.text("admin.creator"));
             return;
@@ -216,6 +259,7 @@ public final class CommandHandler {
             sender.sendMessage(core.text("no-permission"));
             return;
         }
+
         switch (sub) {
             case "reload" -> {
                 try {
@@ -230,8 +274,7 @@ public final class CommandHandler {
                     "version", core.platform().pluginVersion(),
                     "platform", core.platform().platformName(),
                     "server", core.serverId())));
-            case "creator", "author", "credit" -> sender.sendMessage(core.text("admin.creator"));
-                default -> sender.sendMessage(core.text("admin.help"));
+            default -> sender.sendMessage(core.text("admin.help"));
         }
     }
 
@@ -262,6 +305,9 @@ public final class CommandHandler {
 
     public List<String> tabComplete(MineStormSender sender, String command, String[] args) {
         String cmd = command.toLowerCase(Locale.ROOT);
+        if (cmd.equals("msban")) {
+            cmd = "minestormban";
+        }
         if (args.length == 0 || !sender.hasPermission("minestormban." + (cmd.equals("minestormban") ? "admin" : cmd))) {
             return new ArrayList<>();
         }
@@ -271,19 +317,29 @@ public final class CommandHandler {
             return args.length == 1 ? filter(List.of("reload", "version", "creator"), current) : List.of();
         }
 
-        int offset = args[0].equalsIgnoreCase(SILENT_FLAG) ? 1 : 0;
-        int position = args.length - 1 - offset;
-        if (position < 0) {
-            return new ArrayList<>();
+        boolean scoped = cmd.equals("ban") || cmd.equals("mute");
+        boolean allowGlobal = scoped || cmd.equals("unban") || cmd.equals("unmute");
+
+        // Skip the flags that were already typed before the cursor.
+        int offset = 0;
+        while (offset < args.length - 1 && isFlag(args[offset], allowGlobal, scoped)) {
+            offset++;
         }
+        int position = args.length - 1 - offset;
         if (position == 0) {
             List<String> options = new ArrayList<>(core.platform().onlinePlayerNames());
-            if (args.length == 1 && sender.hasPermission("minestormban.silent")) {
-                options.add(SILENT_FLAG);
+            if (sender.hasPermission("minestormban.silent")) {
+                options.add("-s");
+            }
+            if (allowGlobal && sender.hasPermission("minestormban.global")) {
+                options.add("-g");
+            }
+            if (scoped) {
+                options.add("-l");
             }
             return filter(options, current);
         }
-        if (position == 1 && (cmd.equals("ban") || cmd.equals("mute"))) {
+        if (position == 1 && scoped) {
             return filter(DURATION_SUGGESTIONS, current);
         }
         return new ArrayList<>();
