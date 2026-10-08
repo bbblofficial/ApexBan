@@ -2,7 +2,7 @@ name: MineStormBan
 version: '${version}'
 main: dev.minestormban.bukkit.MineStormBanBukkit
 api-version: '1.13'
-author: MineStormBan
+author: Muvixo
 description: Enterprise moderation core - bans, mutes and kicks with a shared global database.
 commands:
   ban:
@@ -23,10 +23,10 @@ commands:
     usage: /<command> [-s] <player>
   msban:
     description: MineStormBan administration
-    usage: /<command> <reload|version>
+    usage: /<command> <reload|version|creator>
   minestormban:
     description: MineStormBan administration
-    usage: /<command> <reload|version>
+    usage: /<command> <reload|version|creator>
 permissions:
   minestormban.ban:
     description: Use /ban

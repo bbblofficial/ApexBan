@@ -1,0 +1,92 @@
+# ============================================================================
+#  MineStormBan - config.yml
+#  Shared by the Bukkit/Spigot/Paper, BungeeCord and Velocity builds.
+#  Run every server (and the proxy) against the SAME database to share bans.
+# ============================================================================
+
+# Unique name of this server/proxy.
+server-id: "lobby-1"
+
+# ----------------------------------------------------------------------------
+#  Database
+# ----------------------------------------------------------------------------
+database:
+  # "sqlite" - single file, best for one standalone server.
+  # "mysql"  - MySQL / MariaDB, REQUIRED for networks (proxy + backends).
+  type: "sqlite"
+
+  # Prefix for table names. Letters, digits and underscores only.
+  table-prefix: "msban_"
+
+  # When the database is unreachable during login:
+  #   true  -> let the player in (recommended)
+  #   false -> deny the login with the "login.database-error" message
+  fail-open: true
+
+  sqlite:
+    file: "minestormban.db"
+
+  mysql:
+    host: "127.0.0.1"
+    port: 3306
+    database: "minestormban"
+    username: "minestormban"
+    password: "change-me"
+    use-ssl: false
+    pool-size: 8
+    connection-timeout-ms: 10000
+
+# ----------------------------------------------------------------------------
+#  Cross-server synchronisation
+# ----------------------------------------------------------------------------
+sync:
+  # How often (seconds) this server checks the database for punishments issued
+  # elsewhere, so online players are kicked/muted/unmuted network-wide.
+  poll-interval-seconds: 5
+
+# ----------------------------------------------------------------------------
+#  Time & date formatting
+# ----------------------------------------------------------------------------
+timezone: "UTC"
+date-format: "dd/MM/yyyy HH:mm:ss"
+
+# ----------------------------------------------------------------------------
+#  Default reasons
+# ----------------------------------------------------------------------------
+defaults:
+  ban-reason: "Violating the server rules"
+  mute-reason: "Violating the chat rules"
+  kick-reason: "Kicked by a staff member"
+
+# ----------------------------------------------------------------------------
+#  Limits
+# ----------------------------------------------------------------------------
+limits:
+  max-duration: "5y"
+
+# ----------------------------------------------------------------------------
+#  Announcements
+# ----------------------------------------------------------------------------
+announcements:
+  ban: true
+  mute: true
+  kick: true
+  unban: true
+  unmute: true
+
+# ----------------------------------------------------------------------------
+#  Mute behaviour
+# ----------------------------------------------------------------------------
+mute:
+  blocked-commands:
+    - "msg"
+    - "tell"
+    - "w"
+    - "whisper"
+    - "r"
+    - "reply"
+    - "me"
+    - "say"
+    - "mail"
+    - "t"
+    - "pm"

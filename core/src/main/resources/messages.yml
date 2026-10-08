@@ -2,7 +2,7 @@
 #  MineStormBan - messages.yml
 #  Created by Muvixo
 #  Default theme: Aqua (&b) and White (&f)
-#  Uses legacy & color codes only (no MiniMessage <> tags)
+#  Legacy & color codes only.
 # ============================================================================
 
 prefix: '&8[&bMine&fStorm&bBan&8] &7'

@@ -203,11 +203,19 @@ public final class CommandHandler {
     // ------------------------------------------------------------------ /apexban
 
     private void admin(MineStormSender sender, String[] args) {
+        String sub = args.length > 0 ? args[0].toLowerCase(Locale.ROOT) : "help";
+
+        // /msban creator (and /minestormban creator) is PUBLIC: any player can
+        // run it to see who made the plugin. No permission required.
+        if (sub.equals("creator") || sub.equals("author") || sub.equals("credit")) {
+            sender.sendMessage(core.text("admin.creator"));
+            return;
+        }
+
         if (!sender.hasPermission("minestormban.admin")) {
             sender.sendMessage(core.text("no-permission"));
             return;
         }
-        String sub = args.length > 0 ? args[0].toLowerCase(Locale.ROOT) : "help";
         switch (sub) {
             case "reload" -> {
                 try {
