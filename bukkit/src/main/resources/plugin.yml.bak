@@ -25,7 +25,6 @@ commands:
     description: MineStormBan administration (creator is public)
     usage: /<command> <reload|version|creator>
     aliases: [msban]
-
 permissions:
   minestormban.ban:
     description: Use /ban
@@ -80,6 +79,8 @@ permissions:
       minestormban.unban: true
       minestormban.unmute: true
       minestormban.silent: true
-      minestormban.global: true
-      minestormban.notify: true
+      minestormban.global:
+    description: Use the -g flag (global ban/mute, or remove a punishment on all servers)
+    default: op
+  minestormban.notify: true
       minestormban.admin: true
