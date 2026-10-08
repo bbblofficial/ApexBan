@@ -1,6 +1,6 @@
-package dev.apexban.core;
+package dev.minestormban.core;
 
-import dev.apexban.core.util.TextFormatter;
+import dev.minestormban.core.util.TextFormatter;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

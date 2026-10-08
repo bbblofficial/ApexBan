@@ -1,9 +1,9 @@
 {
-  "id": "apexban",
-  "name": "ApexBan",
+  "id": "minestormban",
+  "name": "MineStormBan",
   "version": "${version}",
   "description": "Enterprise moderation core - bans, mutes and kicks with a shared global database.",
-  "authors": ["ApexBan"],
+  "authors": ["MineStormBan"],
   "dependencies": [],
-  "main": "dev.apexban.velocity.ApexBanVelocity"
+  "main": "dev.minestormban.velocity.MineStormBanVelocity"
 }

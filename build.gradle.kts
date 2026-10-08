@@ -3,7 +3,7 @@ plugins {
 }
 
 allprojects {
-    group = "dev.apexban"
+    group = "dev.minestormban"
     version = providers.gradleProperty("pluginVersion").get()
 
     repositories {

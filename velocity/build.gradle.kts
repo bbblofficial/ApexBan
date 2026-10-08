@@ -19,13 +19,13 @@ tasks.processResources {
 tasks.jar { enabled = false }
 
 tasks.shadowJar {
-    archiveBaseName.set("ApexBan-Velocity")
+    archiveBaseName.set("MineStormBan-Velocity")
     archiveClassifier.set("")
     mergeServiceFiles()
     // Velocity ships its own slf4j; the injected Logger type must stay un-relocated.
     exclude("org/slf4j/**")
-    relocate("com.zaxxer.hikari", "dev.apexban.libs.hikari")
-    relocate("org.yaml.snakeyaml", "dev.apexban.libs.snakeyaml")
+    relocate("com.zaxxer.hikari", "dev.minestormban.libs.hikari")
+    relocate("org.yaml.snakeyaml", "dev.minestormban.libs.snakeyaml")
 }
 
 tasks.build { dependsOn(tasks.shadowJar) }

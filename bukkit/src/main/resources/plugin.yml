@@ -1,8 +1,8 @@
-name: ApexBan
+name: MineStormBan
 version: '${version}'
-main: dev.apexban.bukkit.ApexBanBukkit
+main: dev.minestormban.bukkit.MineStormBanBukkit
 api-version: '1.13'
-author: ApexBan
+author: MineStormBan
 description: Enterprise moderation core - bans, mutes and kicks with a shared global database.
 commands:
   ban:
@@ -21,59 +21,62 @@ commands:
   unmute:
     description: Remove a mute
     usage: /<command> [-s] <player>
-  apexban:
-    description: ApexBan administration
+  msban:
+    description: MineStormBan administration
+    usage: /<command> <reload|version>
+  minestormban:
+    description: MineStormBan administration
     usage: /<command> <reload|version>
 permissions:
-  apexban.ban:
+  minestormban.ban:
     description: Use /ban
     default: op
-  apexban.mute:
+  minestormban.mute:
     description: Use /mute
     default: op
-  apexban.kick:
+  minestormban.kick:
     description: Use /kick
     default: op
-  apexban.unban:
+  minestormban.unban:
     description: Use /unban
     default: op
-  apexban.unmute:
+  minestormban.unmute:
     description: Use /unmute
     default: op
-  apexban.silent:
+  minestormban.silent:
     description: Use the -s (silent) flag
     default: op
-  apexban.notify:
+  minestormban.notify:
     description: See silent punishments and staff-only announcements
     default: op
-  apexban.admin:
-    description: Use /apexban
+  minestormban.admin:
+    description: Use /msban and /minestormban
     default: op
-  apexban.exempt.ban:
+  minestormban.exempt.ban:
     description: Cannot be banned
     default: false
-  apexban.exempt.mute:
+  minestormban.exempt.mute:
     description: Cannot be muted
     default: false
-  apexban.exempt.kick:
+  minestormban.exempt.kick:
     description: Cannot be kicked
     default: false
-  apexban.exempt.*:
+  minestormban.exempt.*:
     description: Cannot be banned, muted or kicked
     default: false
     children:
-      apexban.exempt.ban: true
-      apexban.exempt.mute: true
-      apexban.exempt.kick: true
-  apexban.*:
-    description: All ApexBan staff permissions
+      minestormban.exempt.ban: true
+      minestormban.exempt.mute: true
+      minestormban.exempt.kick: true
+  minestormban.*:
+    description: All MineStormBan staff permissions
     default: op
     children:
-      apexban.ban: true
-      apexban.mute: true
-      apexban.kick: true
-      apexban.unban: true
-      apexban.unmute: true
-      apexban.silent: true
-      apexban.notify: true
-      apexban.admin: true
+      minestormban.ban: true
+      minestormban.mute: true
+      minestormban.kick: true
+      minestormban.unban: true
+      minestormban.unmute: true
+      minestormban.silent: true
+      minestormban.notify: true
+      minestormban.admin: true

@@ -1,7 +1,7 @@
-package dev.apexban.core;
+package dev.minestormban.core;
 
-import dev.apexban.core.util.DurationFormatter;
-import dev.apexban.core.util.DurationParser;
+import dev.minestormban.core.util.DurationFormatter;
+import dev.minestormban.core.util.DurationParser;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

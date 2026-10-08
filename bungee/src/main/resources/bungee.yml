@@ -1,5 +1,5 @@
-name: ApexBan
+name: MineStormBan
 version: '${version}'
-main: dev.apexban.bungee.ApexBanBungee
-author: ApexBan
+main: dev.minestormban.bungee.MineStormBanBungee
+author: MineStormBan
 description: Enterprise moderation core - bans, mutes and kicks with a shared global database.

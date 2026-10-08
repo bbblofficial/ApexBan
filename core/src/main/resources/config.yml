@@ -1,11 +1,10 @@
 # ============================================================================
-#  ApexBan - config.yml
+#  MineStormBan - config.yml
 #  Shared by the Bukkit/Spigot/Paper, BungeeCord and Velocity builds.
 #  Run every server (and the proxy) against the SAME database to share bans.
 # ============================================================================
 
-# Unique name of this server/proxy. Stored with every punishment so staff can
-# see where it was issued; it is available as %server% in messages and layouts.
+# Unique name of this server/proxy.
 server-id: "lobby-1"
 
 # ----------------------------------------------------------------------------
@@ -17,22 +16,21 @@ database:
   type: "sqlite"
 
   # Prefix for table names. Letters, digits and underscores only.
-  table-prefix: "apexban_"
+  table-prefix: "msban_"
 
   # When the database is unreachable during login:
-  #   true  -> let the player in (recommended, avoids locking everyone out)
+  #   true  -> let the player in (recommended)
   #   false -> deny the login with the "login.database-error" message
   fail-open: true
 
   sqlite:
-    # File inside the plugin folder.
-    file: "apexban.db"
+    file: "minestormban.db"
 
   mysql:
     host: "127.0.0.1"
     port: 3306
-    database: "apexban"
-    username: "apexban"
+    database: "minestormban"
+    username: "minestormban"
     password: "change-me"
     use-ssl: false
     pool-size: 8
@@ -44,19 +42,16 @@ database:
 sync:
   # How often (seconds) this server checks the database for punishments issued
   # elsewhere, so online players are kicked/muted/unmuted network-wide.
-  # Keep the clocks of all servers synchronised (NTP) for best results.
   poll-interval-seconds: 5
 
 # ----------------------------------------------------------------------------
-#  Time & date formatting (used for %expires% and %date%)
+#  Time & date formatting
 # ----------------------------------------------------------------------------
-# Any IANA zone id, e.g. "UTC", "Europe/Amsterdam", "America/New_York".
 timezone: "UTC"
-# java.time.DateTimeFormatter pattern.
 date-format: "dd/MM/yyyy HH:mm:ss"
 
 # ----------------------------------------------------------------------------
-#  Default reasons (used when the command is run without a reason)
+#  Default reasons
 # ----------------------------------------------------------------------------
 defaults:
   ban-reason: "Violating the server rules"
@@ -67,16 +62,10 @@ defaults:
 #  Limits
 # ----------------------------------------------------------------------------
 limits:
-  # Longest allowed temporary punishment. Omit the duration to go permanent.
-  # Units: s, m (minutes), h, d, w, mo (30 days), y (365 days). e.g. "1d12h"
   max-duration: "5y"
 
 # ----------------------------------------------------------------------------
 #  Announcements
-#  true  -> broadcast to everyone on this server
-#  false -> only players with apexban.notify (and the console) see it
-#  Using the -s flag (e.g. /ban -s Steve) always keeps it staff-only and
-#  requires the apexban.silent permission.
 # ----------------------------------------------------------------------------
 announcements:
   ban: true
@@ -89,7 +78,6 @@ announcements:
 #  Mute behaviour
 # ----------------------------------------------------------------------------
 mute:
-  # Commands that muted players may NOT use (without the leading slash).
   blocked-commands:
     - "msg"
     - "tell"

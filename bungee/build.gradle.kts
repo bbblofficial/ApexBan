@@ -20,12 +20,12 @@ tasks.processResources {
 tasks.jar { enabled = false }
 
 tasks.shadowJar {
-    archiveBaseName.set("ApexBan-Bungee")
+    archiveBaseName.set("MineStormBan-Bungee")
     archiveClassifier.set("")
     mergeServiceFiles()
-    relocate("com.zaxxer.hikari", "dev.apexban.libs.hikari")
-    relocate("org.yaml.snakeyaml", "dev.apexban.libs.snakeyaml")
-    relocate("org.slf4j", "dev.apexban.libs.slf4j")
+    relocate("com.zaxxer.hikari", "dev.minestormban.libs.hikari")
+    relocate("org.yaml.snakeyaml", "dev.minestormban.libs.snakeyaml")
+    relocate("org.slf4j", "dev.minestormban.libs.slf4j")
 }
 
 tasks.build { dependsOn(tasks.shadowJar) }
